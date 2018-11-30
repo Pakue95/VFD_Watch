@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name VFD_Watch)(type KiCad)(uri ${KIPRJMOD}/VFD_Watch.pretty)(options "")(descr ""))
+  (lib (name ESP32-footprints-Lib)(type KiCad)(uri ${KIPRJMOD}/ESP32-kiCAD-Footprints/ESP32-Footprints/ESP32-footprints-Lib.pretty)(options "")(descr ""))
+)

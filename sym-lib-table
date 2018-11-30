@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name VFD_Components)(type Legacy)(uri ${KIPRJMOD}/VFD_Components.lib)(options "")(descr ""))
+  (lib (name ESP32-footprints-Shem-Lib)(type Legacy)(uri ${KIPRJMOD}/ESP32-kiCAD-Footprints/ESP32-Footprints/ESP32-footprints-Shem-Lib.lib)(options "")(descr ""))
+)
