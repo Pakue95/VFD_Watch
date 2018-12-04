@@ -43,11 +43,11 @@ A 950 351 49 900 -11 0 1 0 N 950 400 1000 350
 C 0 -150 0 0 1 39 N
 C 0 0 0 0 1 39 N
 T 0 -700 150 31 0 0 0 a Normal 0 C C
-T 0 -850 50 31 0 0 0 b Normal 0 C C
-T 0 -900 -100 31 0 0 0 c Normal 0 C C
+T 0 -550 50 31 0 0 0 b Normal 0 C C
+T 0 -600 -100 31 0 0 0 c Normal 0 C C
 T 0 -750 -150 31 0 0 0 d Normal 0 C C
-T 0 -600 -100 31 0 0 0 e Normal 0 C C
-T 0 -550 50 31 0 0 0 f Normal 0 C C
+T 0 -900 -100 31 0 0 0 e Normal 0 C C
+T 0 -850 50 31 0 0 0 f Normal 0 C C
 T 0 -700 0 31 0 0 0 g Normal 0 C C
 P 2 0 1 0 -1000 -550 -1000 350 N
 P 2 0 1 0 -900 -250 -900 -600 N
