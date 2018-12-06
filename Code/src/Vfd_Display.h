@@ -59,7 +59,8 @@ public:
   void setDutyCycle(uint8_t);
   uint32_t getFreqMultiplex();
   uint32_t getFreqHeat();
-  void setCharacter(uint8_t character, bool *digit);
+  void setCharacter(char character, int pos);
+  void print(char* text);
   void handler();
 
 private:
@@ -73,11 +74,11 @@ private:
   static void _setFlagMultiplex();
   int _posMultiplex;
   uint16_t _dataMultiplex[5] = {
-    0xAD5D,
-    0xBC5D,
-    0xC200,
-    0xAC5F,
-    0xAC7D
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000
   };
   uint8_t _dutyCycle;
   uint32_t _freqMultiplex;

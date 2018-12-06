@@ -35,6 +35,7 @@ void vfdDisplay::begin(
   _freqMultiplex = freqMultiplex;
   _dutyCycle = dutyCycle; //invert value
 
+  Wire.setClock(400000L);
   mcp.begin();
   for(int i = 0; i < 16; i++){
     mcp.pinMode(i,OUTPUT);
@@ -48,12 +49,15 @@ void vfdDisplay::begin(
 
 
   // FUCK THIS IN PARTICULAR
-  tickerMultiplex.attach_ms(1000.0/_freqMultiplex, _setFlagMultiplex);
+  tickerMultiplex.attach_ms(
+    1000.0/_freqMultiplex,
+    _setFlagMultiplex);
 }
 
 void vfdDisplay::_nextMultiplex() {
-  mcp.writeGPIOAB(_dataMultiplex[_posMultiplex]);
+  mcp.writeGPIOAB(0x0000); // turn off to reduce crosstalk
   _posMultiplex = (_posMultiplex + 1) % 5;
+  mcp.writeGPIOAB(_dataMultiplex[_posMultiplex]);
 }
 
 bool vfdDisplay::_flagMultiplex = 0;
@@ -75,6 +79,7 @@ uint16_t vfdDisplay::_getMultiplex(uint8_t pos, bool *digit){
     case 2: out |= (1 << CHAR_3); break;
     case 3: out |= (1 << CHAR_4); break;
     case 4: out |= (1 << CHAR_5); break;
+    default: return 0x0000;
   }
 
   if (digit[0]) {out |= (1 << SEG_A);}
@@ -182,9 +187,59 @@ void vfdDisplay::setDP(bool dp1, bool dp2){
   _dataMultiplex[2] = _getMultiplex(2, _digit3);
 }
 
-void vfdDisplay::setCharacter(uint8_t pos, bool *digit){
-  for(int i = 0; i < 5; i++){
-    _dataMultiplex[i]=0x0000;
+void vfdDisplay::setCharacter(char character, int pos){
+  bool onSegments[9];
+
+  switch (character) {
+    //                       a  b  c  d  e  f  g dp1 dp2
+    case 0: {bool temp[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 1: {bool temp[9] = {0, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 2: {bool temp[9] = {1, 1, 0, 1, 1, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 3: {bool temp[9] = {1, 1, 1, 1, 0, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 4: {bool temp[9] = {0, 1, 1, 0, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 5: {bool temp[9] = {1, 0, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 6: {bool temp[9] = {1, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 7: {bool temp[9] = {1, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 8: {bool temp[9] = {1, 1, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 9: {bool temp[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+
+    case 'a': {bool temp[9] = {1, 1, 1, 0, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'b': {bool temp[9] = {0, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'c': {bool temp[9] = {1, 0, 0, 1, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'd': {bool temp[9] = {0, 1, 1, 1, 1, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'e': {bool temp[9] = {1, 0, 0, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'f': {bool temp[9] = {1, 0, 0, 0, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'g': {bool temp[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'h': {bool temp[9] = {0, 1, 1, 0, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'i': {bool temp[9] = {0, 0, 0, 0, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'j': {bool temp[9] = {0, 1, 1, 1, 1, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'k': {bool temp[9] = {0, 0, 0, 0, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'l': {bool temp[9] = {0, 0, 0, 1, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'm': {bool temp[9] = {1, 0, 1, 0, 1, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'n': {bool temp[9] = {0, 0, 1, 0, 1, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'o': {bool temp[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'p': {bool temp[9] = {1, 1, 0, 0, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'q': {bool temp[9] = {1, 1, 1, 0, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'r': {bool temp[9] = {0, 0, 0, 0, 1, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 's': {bool temp[9] = {1, 0, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 't': {bool temp[9] = {0, 0, 0, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'u': {bool temp[9] = {0, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'v': {bool temp[9] = {0, 0, 1, 1, 1, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'w': {bool temp[9] = {0, 1, 0, 1, 0, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'x': {bool temp[9] = {0, 1, 1, 0, 0, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'y': {bool temp[9] = {0, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case 'z': {bool temp[9] = {0, 1, 0, 0, 1, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '-': {bool temp[9] = {0, 0, 0, 0, 0, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    default:  {bool temp[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
   }
-  _dataMultiplex[pos] = _getMultiplex(pos, digit);
+
+  _dataMultiplex[pos] = _getMultiplex(pos, onSegments);
+}
+
+void vfdDisplay::print(char* text){
+  setDP(0,0);
+  setCharacter(text[0],0);
+  setCharacter(text[1],1);
+  setCharacter(text[2],3);
+  setCharacter(text[3],4);
 }

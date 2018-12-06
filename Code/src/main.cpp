@@ -1,49 +1,29 @@
 #include <Arduino.h>
 #include <Vfd_Display.h>
+#include <NTP.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
+#include "OneButton.h"
+
+WiFiUDP udp;
+
+NTP ntp(udp);
 
 
 
 TaskHandle_t vfdTask;
-/*
-Ticker jitter;
-bool dir = 1;
-void PWMdir() {
-  if(dir){
-    ledcWrite(0, 0);
-    ledcWrite(1, 90);
-    dir = !dir;
-  }
-  else{
-    ledcWrite(0, 90);
-    ledcWrite(1, 0);
-    dir = !dir;
-  }
-}
-
-Ticker tickerMultiplex;
-int charMultiplex = 3;
-void multiplex(){
-  charMultiplex++;
-  if (charMultiplex > 4) charMultiplex = 0;
-  switch (charMultiplex) {
-    case 0: mcp.writeGPIOAB(0xAD5D); break;
-    case 1: mcp.writeGPIOAB(0xBC5D); break;
-    case 2: mcp.writeGPIOAB(0xC200); break;
-    case 3: mcp.writeGPIOAB(0xAC5F); break;//A457
-    case 4: mcp.writeGPIOAB(0xAC7D); break;
-    default: break;
-  }
-
-}
-*/
-
 vfdDisplay vfd;
+
+OneButton button0(BTN0, false);
+OneButton button1(BTN1, false);
+OneButton button2(BTN2, false);
 
 int seconds = 0;
 int minutes = 0;
 
 Ticker secondsTick;
 Ticker minutesTick;
+Ticker blinker;
 
 void secondUp(){
   seconds = (seconds + 1) % 60;
@@ -59,12 +39,14 @@ void callHandler(void * pvParameters){
   }
 }
 
+void manualSetTime();
+
 void setup() {
   Serial.begin(115200);
 
 
   xTaskCreatePinnedToCore(
-     callHandler,                  /* pvTaskCode */
+     callHandler,           /* pvTaskCode */
      "VFD_Handler",         /* pcName */
      1000,                  /* usStackDepth */
      NULL,                  /* pvParameters */
@@ -72,31 +54,86 @@ void setup() {
      &vfdTask,              /* pxCreatedTask */
      1);                    /* xCoreID */
 
-  vfd.begin(120, 500, 10000);
+  vfd.begin(120, 1000, 10000);
   vfd.setHours(00);
-  vfd.setMinutes(00);
+  vfd.setMinutes(50);
   vfd.setDP(1,1);
 
   secondsTick.attach_ms(10, secondUp);
   minutesTick.attach_ms(600, minuteUp);
+
+  //manualSetTime();
+
+  WiFi.begin(ssid, password);
+
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+
+  ntp.begin();
+  ntp.offset(0, 1, 0, 1); //days,hours,minutes,seconds
+  delay(100);
+  WiFi.mode( WIFI_MODE_NULL ); //turn off Wifi
+
+  //button.attachDoubleClick(manualSetTime);
 }
+
+//char* text = "here could be your message    ";
+//int length = 26;
 
 void loop() {
+  vfd.setHours(ntp.hours());
+  vfd.setMinutes(ntp.minutes());
+
+  delay(200); // wait for 20 seconds before refreshing.
+  //button0.tick();
   /*
-  digitalWrite(HEAT_INT1, HIGH);
-  digitalWrite(HEAT_INT2, LOW);
+  delay(3000);
 
-  delayMicroseconds(0.5*dutyCycle*1000000.0/frequency);
-
-  digitalWrite(HEAT_INT1, LOW);
-  digitalWrite(HEAT_INT2, HIGH);
-
-  delayMicroseconds(0.5*dutyCycle*1000000.0/frequency);
-
-  digitalWrite(HEAT_INT1, LOW);
-  digitalWrite(HEAT_INT2, LOW);
+  for (int i = 0; i < length+1; i++){
+    vfd.setCharacter(text[i], 0);
+    vfd.setCharacter(text[i+1], 1);
+    vfd.setCharacter(text[i+2], 3);
+    vfd.setCharacter(text[i+3], 4);
+    delay(500);
+  }
   */
-  //delayMicroseconds((1.0-dutyCycle)*1000000.0/frequency);
-  vfd.setHours(minutes);
-  vfd.setMinutes(seconds);
 }
+
+/*
+void manualSetTime(){
+  vfd.setCharacter('-', 0);
+  vfd.setCharacter('-', 1);
+  vfd.setCharacter('-', 3);
+  vfd.setCharacter('-', 4);
+
+  bool timeOK = false;
+  int pos = 0;
+  int tValue = 0;
+  int tHours = 0;
+  int tMinutes = 0;
+  bool blink = false;
+
+
+  bool flagButton0 = false;
+  static auto setFlagButton0 = [&flagButton0](){flagButton0 = true;};
+  auto callButton0 =
+    [&pos,&flagButton0](){
+       if(flagButton0){
+         pos++;
+         flagButton0 = false;}};
+
+
+  button0.attachClick(setFlagButton0);
+  // button1.attachClick([=](int tValue){tValue = (tValue + 1) % 10; Serial.println(tValue);});
+  // button2.attachClick([=](int tValue){tValue = (tValue + 1) % 10; Serial.println(tValue);});
+
+  while(!timeOK){
+    button0.tick();
+    button1.tick();
+    button2.tick();
+  }
+}*/
