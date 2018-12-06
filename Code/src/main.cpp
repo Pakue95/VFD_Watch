@@ -4,7 +4,7 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include "OneButton.h"
-#inlcude "Password.h"
+#include "Password.h"
 
 WiFiUDP udp;
 
@@ -34,26 +34,10 @@ void minuteUp(){
   minutes = (minutes + 1) % 100;
 }
 
-void callHandler(void * pvParameters){
-  while(1){
-    vfd.handler();
-  }
-}
-
 void manualSetTime();
 
 void setup() {
   Serial.begin(115200);
-
-
-  xTaskCreatePinnedToCore(
-     callHandler,           /* pvTaskCode */
-     "VFD_Handler",         /* pcName */
-     1000,                  /* usStackDepth */
-     NULL,                  /* pvParameters */
-     1,                     /* uxPriority */
-     &vfdTask,              /* pxCreatedTask */
-     1);                    /* xCoreID */
 
   vfd.begin(120, 1000, 10000);
   vfd.setHours(00);
@@ -76,7 +60,6 @@ void setup() {
 
   ntp.begin();
   ntp.offset(0, 1, 0, 1); //days,hours,minutes,seconds
-  delay(100);
   WiFi.mode( WIFI_MODE_NULL ); //turn off Wifi
 
   //button.attachDoubleClick(manualSetTime);

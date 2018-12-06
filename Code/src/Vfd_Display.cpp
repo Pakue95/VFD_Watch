@@ -12,12 +12,25 @@ vfdDisplay::~vfdDisplay(){
   //TODO disable PWM
 }
 
-Adafruit_MCP23017 mcp;
+// declare static member variables
+// as they can't be declared in the
+// header file
+int vfdDisplay::_posMultiplex = 0;
+uint16_t vfdDisplay::_dataMultiplex[5] = {
+  0x0000,
+  0x0000,
+  0x0000,
+  0x0000,
+  0x0000
+};
+
+Adafruit_MCP23017 vfdDisplay::mcp;
 
 void vfdDisplay::begin(
   uint8_t dutyCycle,
   uint32_t freqMultiplex,
   uint32_t freqHeat){
+
   Serial.begin(115200);
   pinMode(EN_24V, OUTPUT);
   pinMode(HEAT_EN, OUTPUT);
@@ -48,10 +61,10 @@ void vfdDisplay::begin(
   ledcWrite(0, _dutyCycle);
 
 
-  // FUCK THIS IN PARTICULAR
+  //FUCK THIS IN PARTICULAR
   tickerMultiplex.attach_ms(
     1000.0/_freqMultiplex,
-    _setFlagMultiplex);
+    _nextMultiplex);
 }
 
 void vfdDisplay::_nextMultiplex() {
@@ -60,15 +73,6 @@ void vfdDisplay::_nextMultiplex() {
   mcp.writeGPIOAB(_dataMultiplex[_posMultiplex]);
 }
 
-bool vfdDisplay::_flagMultiplex = 0;
-
-void vfdDisplay::_setFlagMultiplex(){
-  _flagMultiplex = 1;
-}
-
-void vfdDisplay::handler(){
-    if(_flagMultiplex) {_nextMultiplex(); _flagMultiplex = 0;}
-}
 
 uint16_t vfdDisplay::_getMultiplex(uint8_t pos, bool *digit){
   uint16_t out = 0;
@@ -104,7 +108,7 @@ void vfdDisplay::deactivate(){
 void vfdDisplay::activate(){
   digitalWrite(EN_24V, HIGH);
   digitalWrite(HEAT_EN, HIGH);
-  tickerMultiplex.attach_ms(1000.0/_freqMultiplex, _setFlagMultiplex);
+  tickerMultiplex.attach_ms(1000.0/_freqMultiplex, _nextMultiplex);
 }
 
 void vfdDisplay::setDutyCycle(uint8_t duty){

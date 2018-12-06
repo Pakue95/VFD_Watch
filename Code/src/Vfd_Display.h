@@ -35,7 +35,7 @@
 class vfdDisplay{
   //Ticker tickerJitter;
 
-  Adafruit_MCP23017 mcp;
+  static Adafruit_MCP23017 mcp;
   Ticker tickerMultiplex;
 public:
   vfdDisplay(void);
@@ -61,7 +61,6 @@ public:
   uint32_t getFreqHeat();
   void setCharacter(char character, int pos);
   void print(char* text);
-  void handler();
 
 private:
   // a b c d e f g dp1 dp2
@@ -70,21 +69,13 @@ private:
   bool _digit3[9] = {0}; //dots
   bool _digit4[9] = {0};
   bool _digit5[9] = {0};
-  static bool _flagMultiplex;
-  static void _setFlagMultiplex();
-  int _posMultiplex;
-  uint16_t _dataMultiplex[5] = {
-    0x0000,
-    0x0000,
-    0x0000,
-    0x0000,
-    0x0000
-  };
+  static int _posMultiplex;
+  static uint16_t _dataMultiplex[5];
+  static void _nextMultiplex();
   uint8_t _dutyCycle;
   uint32_t _freqMultiplex;
   uint32_t _freqHeat;
   uint16_t _getMultiplex(uint8_t pos, bool *digit);
-  void _nextMultiplex();
 };
 
 
