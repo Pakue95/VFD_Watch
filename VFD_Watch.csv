@@ -1,4 +1,4 @@
-"Id";"Designator";"Package";"Quantity";"Designation";"Supplier and ref";
+""Id"";""Designator"";""Package"";""Quantity"";""Designation"";""Supplier and ref"";
 1;"U10";"ILV2-5_7";1;"IVL2-7_5";;;
 2;"REF**,REF**,REF**,REF**";"Strap_Holes";4;"Strap_Holes";;;
 3;"U6";"ESP32-WROOM";1;"ESP32-WROOM";;;
