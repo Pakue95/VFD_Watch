@@ -33,8 +33,6 @@
 #define CHAR_5     5
 
 class vfdDisplay{
-  //Ticker tickerJitter;
-
   static Adafruit_MCP23017 mcp;
   Ticker tickerMultiplex;
 public:
@@ -44,12 +42,7 @@ public:
     uint8_t dutyCycle,
     uint32_t freq_multiplex,
     uint32_t freq_heat);
-  void set(
-    uint8_t digit1,
-    uint8_t digit2,
-    uint8_t digit3,
-    uint8_t digit4,
-    uint8_t dots);
+  void setSegment(uint8_t segments, uint8_t pos);
   void activate();
   void deactivate();
   void setHours(uint8_t hours);
@@ -75,7 +68,7 @@ private:
   uint8_t _dutyCycle;
   uint32_t _freqMultiplex;
   uint32_t _freqHeat;
-  uint16_t _getMultiplex(uint8_t pos, bool *digit);
+  uint16_t _setMultiplex(uint8_t pos, bool *digit);
 };
 
 

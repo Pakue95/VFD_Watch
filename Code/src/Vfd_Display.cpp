@@ -60,8 +60,6 @@ void vfdDisplay::begin(
   ledcAttachPin(HEAT_INT1, 0);
   ledcWrite(0, _dutyCycle);
 
-
-  //FUCK THIS IN PARTICULAR
   tickerMultiplex.attach_ms(
     1000.0/_freqMultiplex,
     _nextMultiplex);
@@ -71,10 +69,12 @@ void vfdDisplay::_nextMultiplex() {
   mcp.writeGPIOAB(0x0000); // turn off to reduce crosstalk
   _posMultiplex = (_posMultiplex + 1) % 5;
   mcp.writeGPIOAB(_dataMultiplex[_posMultiplex]);
+  //Serial.print("Multiplex on Core ");
+  //Serial.println(xPortGetCoreID());
 }
 
 
-uint16_t vfdDisplay::_getMultiplex(uint8_t pos, bool *digit){
+uint16_t vfdDisplay::_setMultiplex(uint8_t pos, bool *digit){
   uint16_t out = 0;
 
   switch (pos) {
@@ -96,6 +96,8 @@ uint16_t vfdDisplay::_getMultiplex(uint8_t pos, bool *digit){
   if (digit[7]) {out |= (1 << SEG_DP1);}
   if (digit[8]) {out |= (1 << SEG_DP2);}
 
+  // set multiplex character in memory
+  _dataMultiplex[pos] = out;
   return out;
 }
 
@@ -108,6 +110,10 @@ void vfdDisplay::deactivate(){
 void vfdDisplay::activate(){
   digitalWrite(EN_24V, HIGH);
   digitalWrite(HEAT_EN, HIGH);
+  // PWM setup
+  ledcSetup(0, _freqHeat, 8);
+  ledcAttachPin(HEAT_INT1, 0);
+  ledcWrite(0, _dutyCycle);
   tickerMultiplex.attach_ms(1000.0/_freqMultiplex, _nextMultiplex);
 }
 
@@ -145,8 +151,9 @@ void vfdDisplay::setHours(uint8_t hours){
   }
 
 
-  _dataMultiplex[0] = _getMultiplex(0, _digit1);
-  _dataMultiplex[1] = _getMultiplex(1, _digit2);
+  _setMultiplex(0, _digit1);
+  _setMultiplex(1, _digit2);
+  //Serial.println(xPortGetCoreID());
 }
 
 void vfdDisplay::setMinutes(uint8_t minutes){
@@ -177,8 +184,8 @@ void vfdDisplay::setMinutes(uint8_t minutes){
     case 9: {bool digit[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
   }
 
-  _dataMultiplex[3] = _getMultiplex(3, _digit4);
-  _dataMultiplex[4] = _getMultiplex(4, _digit5);
+  _setMultiplex(3, _digit4);
+  _setMultiplex(4, _digit5);
 }
 
 void vfdDisplay::setDP(bool dp1, bool dp2){
@@ -188,7 +195,7 @@ void vfdDisplay::setDP(bool dp1, bool dp2){
   if (!dp2 && dp1)  {bool digit[9] = {0, 0, 0, 0, 0, 0, 0, 0, 1};memcpy(_digit3, digit, sizeof(digit[0])*9);}
   if (!dp2 && !dp1) {bool digit[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};memcpy(_digit3, digit, sizeof(digit[0])*9);}
 
-  _dataMultiplex[2] = _getMultiplex(2, _digit3);
+  _setMultiplex(2, _digit3);
 }
 
 void vfdDisplay::setCharacter(char character, int pos){
@@ -237,7 +244,7 @@ void vfdDisplay::setCharacter(char character, int pos){
     default:  {bool temp[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
   }
 
-  _dataMultiplex[pos] = _getMultiplex(pos, onSegments);
+  _setMultiplex(pos, onSegments);
 }
 
 void vfdDisplay::print(char* text){
@@ -246,4 +253,20 @@ void vfdDisplay::print(char* text){
   setCharacter(text[1],1);
   setCharacter(text[2],3);
   setCharacter(text[3],4);
+}
+
+void vfdDisplay::setSegment(uint8_t segments, uint8_t pos){
+  bool boolSegments[9] = {0};
+
+  for (int i = 0; i < 8; ++i){
+    boolSegments[i] = ((segments) & (1<<(i)));
+  }
+
+  // the 4 7-segments are on positions
+  // 0, 1, 3, 4
+  // the third 7-segment (2) should therefore be
+  // at multiplex position 3
+  if(pos <= 2) pos++;
+
+  _setMultiplex(pos, boolSegments);
 }

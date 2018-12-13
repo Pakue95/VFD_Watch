@@ -1,123 +1,87 @@
 #include <Arduino.h>
 #include <Vfd_Display.h>
-#include <NTP.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <WiFiUdp.h>
 #include "OneButton.h"
 #include "Password.h"
 
+#define NTP_SERVER "de.pool.ntp.org"
+#define TZ_INFO "WEST-1DWEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00" // Western European Time
+
 WiFiUDP udp;
-
-NTP ntp(udp);
-
 
 
 TaskHandle_t vfdTask;
 vfdDisplay vfd;
+#include "Animations.h"
 
-OneButton button0(BTN0, false);
-OneButton button1(BTN1, false);
-OneButton button2(BTN2, false);
+OneButton button0(BTN0, true);
+OneButton button1(BTN1, true);
+OneButton button2(BTN2, true);
 
 int seconds = 0;
 int minutes = 0;
+struct tm local;
 
-Ticker secondsTick;
-Ticker minutesTick;
-Ticker blinker;
+Ticker updateTime;
+Ticker shutdownTimer;
 
-void secondUp(){
-  seconds = (seconds + 1) % 60;
-}
 
-void minuteUp(){
-  minutes = (minutes + 1) % 100;
-}
-
-void manualSetTime();
-
-void setup() {
+void initialBoot(){
   Serial.begin(115200);
 
-  vfd.begin(120, 1000, 10000);
-  vfd.setHours(00);
-  vfd.setMinutes(50);
-  vfd.setDP(1,1);
-
-  secondsTick.attach_ms(10, secondUp);
-  minutesTick.attach_ms(600, minuteUp);
-
-  //manualSetTime();
-
   WiFi.begin(ssid, password);
-
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  for(int i =0; WiFi.status() != WL_CONNECTED; i = (i++ % 4)) {
+    wifiAnimation(i);
     Serial.print(".");
   }
 
+  configTzTime(TZ_INFO, NTP_SERVER); // config system time via NTP server
+  getLocalTime(&local, 10000);       // get time for 10s
+  WiFi.mode( WIFI_MODE_NULL );
+}
 
-  ntp.begin();
-  ntp.offset(0, 1, 0, 1); //days,hours,minutes,seconds
-  WiFi.mode( WIFI_MODE_NULL ); //turn off Wifi
 
-  //button.attachDoubleClick(manualSetTime);
+void setup() {
+Serial.begin(115200);
+  esp_sleep_wakeup_cause_t wakeup_cause;
+  wakeup_cause = esp_sleep_get_wakeup_cause(); // check wakeup reason
+  Serial.println(wakeup_cause);
+  if (wakeup_cause != ESP_SLEEP_WAKEUP_EXT0) initialBoot();  // external reset -> iitialize
+
+  setenv("TZ", TZ_INFO, 1); // reset timezone
+  tzset();
+
+  // initialize VFD again
+  // filament duty cycle, multiplex frequency, filemant frequency
+  vfd.begin(110, 1000, 100000);
+  getLocalTime(&local);
+  vfd.setMinutes(local.tm_min);
+  vfd.setHours(local.tm_hour);
+  vfd.setDP(1,1);
+
+  updateTime.attach(1, [](){
+    // setup time
+    getLocalTime(&local);
+    Serial.println(&local, "Date: %d.%m.%y  Time: %H:%M:%S"); // print formated time
+    vfd.setMinutes(local.tm_min);
+    vfd.setHours(local.tm_hour);
+  });
+
+  /*
+  // prepare shutdown in X seconds
+  shutdownTimer.once(10, [](){
+    vfd.deactivate();
+    Serial.println("going into deep sleep...");
+    delay(10);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35,0);
+    esp_deep_sleep_start();});
+  */
 }
 
 //char* text = "here could be your message    ";
 //int length = 26;
 
 void loop() {
-  vfd.setHours(ntp.hours());
-  vfd.setMinutes(ntp.minutes());
-
-  delay(200); // wait for 20 seconds before refreshing.
-  //button0.tick();
-  /*
-  delay(3000);
-
-  for (int i = 0; i < length+1; i++){
-    vfd.setCharacter(text[i], 0);
-    vfd.setCharacter(text[i+1], 1);
-    vfd.setCharacter(text[i+2], 3);
-    vfd.setCharacter(text[i+3], 4);
-    delay(500);
-  }
-  */
 }
-
-/*
-void manualSetTime(){
-  vfd.setCharacter('-', 0);
-  vfd.setCharacter('-', 1);
-  vfd.setCharacter('-', 3);
-  vfd.setCharacter('-', 4);
-
-  bool timeOK = false;
-  int pos = 0;
-  int tValue = 0;
-  int tHours = 0;
-  int tMinutes = 0;
-  bool blink = false;
-
-
-  bool flagButton0 = false;
-  static auto setFlagButton0 = [&flagButton0](){flagButton0 = true;};
-  auto callButton0 =
-    [&pos,&flagButton0](){
-       if(flagButton0){
-         pos++;
-         flagButton0 = false;}};
-
-
-  button0.attachClick(setFlagButton0);
-  // button1.attachClick([=](int tValue){tValue = (tValue + 1) % 10; Serial.println(tValue);});
-  // button2.attachClick([=](int tValue){tValue = (tValue + 1) % 10; Serial.println(tValue);});
-
-  while(!timeOK){
-    button0.tick();
-    button1.tick();
-    button2.tick();
-  }
-}*/
