@@ -57,7 +57,7 @@ Sets the last two digits. Range 0-99.
 ```cpp
 void setCharacter(char character, int pos)
 ```
-Displays a char (```a-z; 0-9; '-'```) at position ```pos``` (```0-4```; ```2``` is the decimal point and will be ignored)
+Displays a char (```a-z; 0-9; '-'```) at position ```pos``` (```0-3```)
 
 ```cpp
 void print(char* text)
