@@ -32,7 +32,7 @@ void initialBoot(){
   Serial.begin(115200);
 
   WiFi.begin(ssid, password);
-  for(int i =0; WiFi.status() != WL_CONNECTED; i = (i++ % 4)) {
+  for(int i = 0; WiFi.status() != WL_CONNECTED; (i = (++i % 4)) ) {
     wifiAnimation(i);
     Serial.print(".");
   }
@@ -44,7 +44,8 @@ void initialBoot(){
 
 
 void setup() {
-Serial.begin(115200);
+  Serial.begin(115200);
+  vfd.begin(110, 1000, 10000);
   esp_sleep_wakeup_cause_t wakeup_cause;
   wakeup_cause = esp_sleep_get_wakeup_cause(); // check wakeup reason
   Serial.println(wakeup_cause);
@@ -55,7 +56,7 @@ Serial.begin(115200);
 
   // initialize VFD again
   // filament duty cycle, multiplex frequency, filemant frequency
-  vfd.begin(110, 1000, 100000);
+  //vfd.begin(110, 1000, 100000);
   getLocalTime(&local);
   vfd.setMinutes(local.tm_min);
   vfd.setHours(local.tm_hour);

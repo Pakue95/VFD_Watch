@@ -266,7 +266,7 @@ void vfdDisplay::setSegment(uint8_t segments, uint8_t pos){
   // 0, 1, 3, 4
   // the third 7-segment (2) should therefore be
   // at multiplex position 3
-  if(pos <= 2) pos++;
+  if(pos >= 2) ++pos;
 
   _setMultiplex(pos, boolSegments);
 }
