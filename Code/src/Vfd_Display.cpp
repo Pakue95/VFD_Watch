@@ -203,16 +203,16 @@ void vfdDisplay::setCharacter(char character, int pos){
 
   switch (character) {
     //                       a  b  c  d  e  f  g dp1 dp2
-    case 0: {bool temp[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 1: {bool temp[9] = {0, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 2: {bool temp[9] = {1, 1, 0, 1, 1, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 3: {bool temp[9] = {1, 1, 1, 1, 0, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 4: {bool temp[9] = {0, 1, 1, 0, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 5: {bool temp[9] = {1, 0, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 6: {bool temp[9] = {1, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 7: {bool temp[9] = {1, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 8: {bool temp[9] = {1, 1, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
-    case 9: {bool temp[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '0': {bool temp[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '1': {bool temp[9] = {0, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '2': {bool temp[9] = {1, 1, 0, 1, 1, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '3': {bool temp[9] = {1, 1, 1, 1, 0, 0, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '4': {bool temp[9] = {0, 1, 1, 0, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '5': {bool temp[9] = {1, 0, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '6': {bool temp[9] = {1, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '7': {bool temp[9] = {1, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '8': {bool temp[9] = {1, 1, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
+    case '9': {bool temp[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
 
     case 'a': {bool temp[9] = {1, 1, 1, 0, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}
     case 'b': {bool temp[9] = {0, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(onSegments, temp, sizeof(temp[0])*9); break;}

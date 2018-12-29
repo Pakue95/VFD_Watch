@@ -26,6 +26,8 @@ struct tm local;
 
 Ticker updateTime;
 Ticker shutdownTimer;
+Ticker pullTime;
+Ticker show35C3;
 
 
 void initialBoot(){
@@ -45,7 +47,7 @@ void initialBoot(){
 
 void setup() {
   Serial.begin(115200);
-  vfd.begin(110, 1000, 10000);
+  vfd.begin(80, 1000, 10000);
   esp_sleep_wakeup_cause_t wakeup_cause;
   wakeup_cause = esp_sleep_get_wakeup_cause(); // check wakeup reason
   Serial.println(wakeup_cause);
@@ -62,7 +64,7 @@ void setup() {
   vfd.setHours(local.tm_hour);
   vfd.setDP(1,1);
 
-  updateTime.attach(1, [](){
+  updateTime.attach(5, [](){
     // setup time
     getLocalTime(&local);
     Serial.println(&local, "Date: %d.%m.%y  Time: %H:%M:%S"); // print formated time
@@ -79,10 +81,16 @@ void setup() {
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35,0);
     esp_deep_sleep_start();});
   */
-}
 
-//char* text = "here could be your message    ";
-//int length = 26;
+
+  pullTime.attach(3600, [](){
+    WiFi.mode(WIFI_MODE_STA);
+    delay(1000);
+    getLocalTime(&local);
+    Serial.println("Pulled new time.");
+    WiFi.mode(WIFI_MODE_NULL);});
+
+}
 
 void loop() {
 }
