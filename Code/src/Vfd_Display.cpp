@@ -69,8 +69,6 @@ void vfdDisplay::_nextMultiplex() {
   mcp.writeGPIOAB(0x0000); // turn off to reduce crosstalk
   _posMultiplex = (_posMultiplex + 1) % 5;
   mcp.writeGPIOAB(_dataMultiplex[_posMultiplex]);
-  //Serial.print("Multiplex on Core ");
-  //Serial.println(xPortGetCoreID());
 }
 
 
@@ -101,6 +99,37 @@ uint16_t vfdDisplay::_setMultiplex(uint8_t pos, bool *digit){
   return out;
 }
 
+uint16_t vfdDisplay::_updateMultiplex(){
+
+  uint16_t tempStore = 0;
+  for (int i = 0; i < 7; i++){
+    if (_screen.digit[0].seg[i]) {tempStore |= (1 << _SEG_ARRAY[i]);}
+  }
+  tempStore |= (1 << CHAR_1);
+  _dataMultiplex[0] = tempStore;
+
+  tempStore = 0;
+  for (int i = 0; i < 7; i++){
+    if (_screen.digit[1].seg[i]) {tempStore |= (1 << _SEG_ARRAY[i]);}
+  }
+  tempStore |= (1 << CHAR_2);
+  _dataMultiplex[1] = tempStore;
+
+  tempStore = 0;
+  for (int i = 0; i < 7; i++){
+    if (_screen.digit[2].seg[i]) {tempStore |= (1 << _SEG_ARRAY[i]);}
+  }
+  tempStore |= (1 << CHAR_4);
+  _dataMultiplex[3] = tempStore;
+
+  tempStore = 0;
+  for (int i = 0; i < 7; i++){
+    if (_screen.digit[3].seg[i]) {tempStore |= (1 << _SEG_ARRAY[i]);}
+  }
+  tempStore |= (1 << CHAR_5);
+  _dataMultiplex[4] = tempStore;
+}
+
 void vfdDisplay::deactivate(){
   digitalWrite(EN_24V, LOW);
   digitalWrite(HEAT_EN, LOW);
@@ -123,7 +152,267 @@ void vfdDisplay::setDutyCycle(uint8_t duty){
 }
 
 void vfdDisplay::setHours(uint8_t hours){
+  struct vfdDisplay::character c1;
+  struct vfdDisplay::character c2;
+
   switch ((hours % 100)/10) {
+    case 0: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=0; // g
+             break;}
+    case 1: {c1.seg[0]=0; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=0; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=0; // g
+             break;}
+    case 2: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=0; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 3: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 4: {c1.seg[0]=0; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=0; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 5: {c1.seg[0]=1; // a
+             c1.seg[1]=0; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 6: {c1.seg[0]=1; // a
+             c1.seg[1]=0; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 7: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=0; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=0; // g
+             break;}
+    case 8: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 9: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+
+  }
+  switch (hours % 10) {
+    case 0: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=0; // g
+             break;}
+    case 1: {c2.seg[0]=0; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=0; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=0; // g
+             break;}
+    case 2: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=0; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 3: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 4: {c2.seg[0]=0; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=0; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 5: {c2.seg[0]=1; // a
+             c2.seg[1]=0; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 6: {c2.seg[0]=1; // a
+             c2.seg[1]=0; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 7: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=0; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=0; // g
+             break;}
+    case 8: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 9: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+  }
+
+  _screen.digit[0] = c1;
+  _screen.digit[1] = c2;
+  _updateMultiplex();
+}
+
+void vfdDisplay::setMinutes(uint8_t minutes){
+  struct vfdDisplay::character c1;
+  struct vfdDisplay::character c2;
+
+  switch ((minutes % 100)/10) {
+    case 0: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=0; // g
+             break;}
+    case 1: {c1.seg[0]=0; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=0; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=0; // g
+             break;}
+    case 2: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=0; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=1; // g
+
+             break;}
+    case 3: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 4: {c1.seg[0]=0; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=0; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 5: {c1.seg[0]=1; // a
+             c1.seg[1]=0; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 6: {c1.seg[0]=1; // a
+             c1.seg[1]=0; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 7: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=0; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=0; // f
+             c1.seg[6]=0; // g
+             break;}
+    case 8: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=1; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    case 9: {c1.seg[0]=1; // a
+             c1.seg[1]=1; // b
+             c1.seg[2]=1; // c
+             c1.seg[3]=1; // d
+             c1.seg[4]=0; // e
+             c1.seg[5]=1; // f
+             c1.seg[6]=1; // g
+             break;}
+    /*
     //                        a  b  c  d  e  f  g dp1 dp2
     case 0: {bool digit[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(_digit1, digit, sizeof(digit[0])*9); break;}
     case 1: {bool digit[9] = {0, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit1, digit, sizeof(digit[0])*9); break;}
@@ -135,57 +424,95 @@ void vfdDisplay::setHours(uint8_t hours){
     case 7: {bool digit[9] = {1, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit1, digit, sizeof(digit[0])*9); break;}
     case 8: {bool digit[9] = {1, 1, 1, 1, 1, 1, 1, 0, 0}; memcpy(_digit1, digit, sizeof(digit[0])*9); break;}
     case 9: {bool digit[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit1, digit, sizeof(digit[0])*9); break;}
-  }
-  switch (hours % 10) {
-    //                        a  b  c  d  e  f  g dp1 dp2
-    case 0: {bool digit[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 1: {bool digit[9] = {0, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 2: {bool digit[9] = {1, 1, 0, 1, 1, 0, 1, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 3: {bool digit[9] = {1, 1, 1, 1, 0, 0, 1, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 4: {bool digit[9] = {0, 1, 1, 0, 0, 1, 1, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 5: {bool digit[9] = {1, 0, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 6: {bool digit[9] = {1, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 7: {bool digit[9] = {1, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 8: {bool digit[9] = {1, 1, 1, 1, 1, 1, 1, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-    case 9: {bool digit[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit2, digit, sizeof(digit[0])*9); break;}
-  }
+    */
 
-
-  _setMultiplex(0, _digit1);
-  _setMultiplex(1, _digit2);
-  //Serial.println(xPortGetCoreID());
-}
-
-void vfdDisplay::setMinutes(uint8_t minutes){
-  switch ((minutes % 100)/10) {
-    //                        a  b  c  d  e  f  g dp1 dp2
-    case 0: {bool digit[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 1: {bool digit[9] = {0, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 2: {bool digit[9] = {1, 1, 0, 1, 1, 0, 1, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 3: {bool digit[9] = {1, 1, 1, 1, 0, 0, 1, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 4: {bool digit[9] = {0, 1, 1, 0, 0, 1, 1, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 5: {bool digit[9] = {1, 0, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 6: {bool digit[9] = {1, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 7: {bool digit[9] = {1, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 8: {bool digit[9] = {1, 1, 1, 1, 1, 1, 1, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
-    case 9: {bool digit[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit4, digit, sizeof(digit[0])*9); break;}
   }
   switch (minutes % 10) {
-    //                        a  b  c  d  e  f  g dp1 dp2
-    case 0: {bool digit[9] = {1, 1, 1, 1, 1, 1, 0, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 1: {bool digit[9] = {0, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 2: {bool digit[9] = {1, 1, 0, 1, 1, 0, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 3: {bool digit[9] = {1, 1, 1, 1, 0, 0, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 4: {bool digit[9] = {0, 1, 1, 0, 0, 1, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 5: {bool digit[9] = {1, 0, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 6: {bool digit[9] = {1, 0, 1, 1, 1, 1, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 7: {bool digit[9] = {1, 1, 1, 0, 0, 0, 0, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 8: {bool digit[9] = {1, 1, 1, 1, 1, 1, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
-    case 9: {bool digit[9] = {1, 1, 1, 1, 0, 1, 1, 0, 0}; memcpy(_digit5, digit, sizeof(digit[0])*9); break;}
+    case 0: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=0; // g
+             break;}
+    case 1: {c2.seg[0]=0; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=0; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=0; // g
+             break;}
+    case 2: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=0; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 3: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 4: {c2.seg[0]=0; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=0; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 5: {c2.seg[0]=1; // a
+             c2.seg[1]=0; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 6: {c2.seg[0]=1; // a
+             c2.seg[1]=0; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 7: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=0; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=0; // f
+             c2.seg[6]=0; // g
+             break;}
+    case 8: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=1; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
+    case 9: {c2.seg[0]=1; // a
+             c2.seg[1]=1; // b
+             c2.seg[2]=1; // c
+             c2.seg[3]=1; // d
+             c2.seg[4]=0; // e
+             c2.seg[5]=1; // f
+             c2.seg[6]=1; // g
+             break;}
   }
 
-  _setMultiplex(3, _digit4);
-  _setMultiplex(4, _digit5);
+  _screen.digit[2] = c1;
+  _screen.digit[3] = c2;
+  _updateMultiplex();
 }
 
 void vfdDisplay::setDP(bool dp1, bool dp2){
@@ -269,4 +596,9 @@ void vfdDisplay::setSegment(uint8_t segments, uint8_t pos){
   if(pos >= 2) ++pos;
 
   _setMultiplex(pos, boolSegments);
+}
+
+void vfdDisplay::testNewStruct(vfdDisplay::screen dodo){
+  _screen = dodo;
+  _updateMultiplex();
 }

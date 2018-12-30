@@ -55,7 +55,18 @@ public:
   void setCharacter(char character, int pos);
   void print(char* text);
 
+  struct character{ // data type of a single 7-segment
+    bool seg[7] = {0};
+  };
+  struct screen{   // data type of a whole screen + decimal points
+    character digit[4];
+    bool dp[2] = {0};
+  };
+
+  void testNewStruct(screen dodo);
+
 private:
+  struct screen _screen;
   // a b c d e f g dp1 dp2
   bool _digit1[9] = {0};
   bool _digit2[9] = {0};
@@ -69,6 +80,8 @@ private:
   uint32_t _freqMultiplex;
   uint32_t _freqHeat;
   uint16_t _setMultiplex(uint8_t pos, bool *digit);
+  uint16_t _updateMultiplex();
+  uint8_t _SEG_ARRAY[7] = {4,2,13,0,11,3,10};
 };
 
 
