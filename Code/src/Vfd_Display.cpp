@@ -69,50 +69,23 @@ void vfdDisplay::begin(
 
 void vfdDisplay::_nextMultiplex() {
   mcp.writeGPIOAB(0x0000); // turn off to reduce crosstalk
-  _posMultiplex = (_posMultiplex + 1) % 5;
-  mcp.writeGPIOAB(_dataMultiplex[_posMultiplex]);
-}
-
-
-uint16_t vfdDisplay::_setMultiplex(uint8_t pos, bool *digit){
-  uint16_t out = 0;
-
-  switch (pos) {
-    case 0: out |= (1 << CHAR_1); break;
-    case 1: out |= (1 << CHAR_2); break;
-    case 2: out |= (1 << CHAR_3); break;
-    case 3: out |= (1 << CHAR_4); break;
-    case 4: out |= (1 << CHAR_5); break;
-    default: return 0x0000;
-  }
-
-  if (digit[0]) {out |= (1 << SEG_A);}
-  if (digit[1]) {out |= (1 << SEG_B);}
-  if (digit[2]) {out |= (1 << SEG_C);}
-  if (digit[3]) {out |= (1 << SEG_D);}
-  if (digit[4]) {out |= (1 << SEG_E);}
-  if (digit[5]) {out |= (1 << SEG_F);}
-  if (digit[6]) {out |= (1 << SEG_G);}
-  if (digit[7]) {out |= (1 << SEG_DP1);}
-  if (digit[8]) {out |= (1 << SEG_DP2);}
-
-  // set multiplex character in memory
-  _dataMultiplex[pos] = out;
-  return out;
+  _posMultiplex = (_posMultiplex + 1) % 5; // interate the position
+  mcp.writeGPIOAB(_dataMultiplex[_posMultiplex]); // write out
 }
 
 void vfdDisplay::_updateMultiplex(){
   for (int i = 0; i < 5; i++){
     uint16_t tempStore = 0;
-    if (_screen.digit[i].a) {tempStore |= (1 << SEG_A);}
-    if (_screen.digit[i].b) {tempStore |= (1 << SEG_B);}
-    if (_screen.digit[i].c) {tempStore |= (1 << SEG_C);}
-    if (_screen.digit[i].d) {tempStore |= (1 << SEG_D);}
-    if (_screen.digit[i].e) {tempStore |= (1 << SEG_E);}
-    if (_screen.digit[i].f) {tempStore |= (1 << SEG_F);}
-    if (_screen.digit[i].g) {tempStore |= (1 << SEG_G);}
-    if (_screen.dp[0])      {tempStore |= (1 << SEG_DP1);}
-    if (_screen.dp[1])      {tempStore |= (1 << SEG_DP2);}
+    // .digit array only valid for characters 0-3
+    if (i <  4 && _screen.digit[i].a) {tempStore |= (1 << SEG_A);}
+    if (i <  4 && _screen.digit[i].b) {tempStore |= (1 << SEG_B);}
+    if (i <  4 && _screen.digit[i].c) {tempStore |= (1 << SEG_C);}
+    if (i <  4 && _screen.digit[i].d) {tempStore |= (1 << SEG_D);}
+    if (i <  4 && _screen.digit[i].e) {tempStore |= (1 << SEG_E);}
+    if (i <  4 && _screen.digit[i].f) {tempStore |= (1 << SEG_F);}
+    if (i <  4 && _screen.digit[i].g) {tempStore |= (1 << SEG_G);}
+    if (i == 4 && _screen.dp[0])      {tempStore |= (1 << SEG_DP1);}
+    if (i == 4 && _screen.dp[1])      {tempStore |= (1 << SEG_DP2);}
 
     switch (i) {
       case 0: {tempStore |= (1 << CHAR_1); break;}
@@ -123,47 +96,6 @@ void vfdDisplay::_updateMultiplex(){
     }
     _dataMultiplex[i] = tempStore;
   }
-
-/*
-  tempStore = 0;
-  for (int i = 0; i < 7; i++){
-    if (_screen.digit[1].a) {tempStore |= (1 << SEG_A);}
-    if (_screen.digit[1].b) {tempStore |= (1 << SEG_B);}
-    if (_screen.digit[1].c) {tempStore |= (1 << SEG_C);}
-    if (_screen.digit[1].d) {tempStore |= (1 << SEG_D);}
-    if (_screen.digit[1].e) {tempStore |= (1 << SEG_E);}
-    if (_screen.digit[1].f) {tempStore |= (1 << SEG_F);}
-    if (_screen.digit[1].g) {tempStore |= (1 << SEG_G);}
-  }
-  tempStore |= (1 << CHAR_2);
-  _dataMultiplex[1] = tempStore;
-
-  tempStore = 0;
-  for (int i = 0; i < 7; i++){
-    if (_screen.digit[2].a) {tempStore |= (1 << SEG_A);}
-    if (_screen.digit[2].b) {tempStore |= (1 << SEG_B);}
-    if (_screen.digit[2].c) {tempStore |= (1 << SEG_C);}
-    if (_screen.digit[2].d) {tempStore |= (1 << SEG_D);}
-    if (_screen.digit[2].e) {tempStore |= (1 << SEG_E);}
-    if (_screen.digit[2].f) {tempStore |= (1 << SEG_F);}
-    if (_screen.digit[2].g) {tempStore |= (1 << SEG_G);}
-  }
-  tempStore |= (1 << CHAR_3);
-  _dataMultiplex[3] = tempStore;
-
-  tempStore = 0;
-  for (int i = 0; i < 7; i++){
-    if (_screen.digit[3].a) {tempStore |= (1 << SEG_A);}
-    if (_screen.digit[3].b) {tempStore |= (1 << SEG_B);}
-    if (_screen.digit[3].c) {tempStore |= (1 << SEG_C);}
-    if (_screen.digit[3].d) {tempStore |= (1 << SEG_D);}
-    if (_screen.digit[3].e) {tempStore |= (1 << SEG_E);}
-    if (_screen.digit[3].f) {tempStore |= (1 << SEG_F);}
-    if (_screen.digit[3].g) {tempStore |= (1 << SEG_G);}
-  }
-  tempStore |= (1 << CHAR_4);
-  _dataMultiplex[4] = tempStore;
-  */
 }
 
 void vfdDisplay::deactivate(){

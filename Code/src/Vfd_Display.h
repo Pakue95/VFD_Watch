@@ -44,6 +44,7 @@ public:
     bool e;
     bool f;
     bool g;
+    // initalize bool variables as false to avoid unwanted side effects
     character() : a(0), b(0), c(0), d(0), e(0), f(0), g(0) {}
     character(bool a_, bool b_, bool c_, bool d_, bool e_, bool f_, bool g_) :
              a(a_), b(b_), c(c_), d(d_), e(e_), f(f_), g(g_) {}
@@ -74,19 +75,12 @@ public:
 
 private:
   screen _screen; // exchange varable
-  // a b c d e f g dp1 dp2
-  bool _digit1[9] = {0};
-  bool _digit2[9] = {0};
-  bool _digit3[9] = {0}; //dots
-  bool _digit4[9] = {0};
-  bool _digit5[9] = {0};
   static int _posMultiplex;
   static uint16_t _dataMultiplex[5];
   static void _nextMultiplex();
   uint8_t _dutyCycle;
   uint32_t _freqMultiplex;
   uint32_t _freqHeat;
-  uint16_t _setMultiplex(uint8_t pos, bool *digit);
   void _updateMultiplex();
 };
 
