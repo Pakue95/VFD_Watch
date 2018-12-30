@@ -67,6 +67,7 @@ void setup() {
   updateTime.attach(2, [](){
     // setup time
     vfd.setDP(1,1);
+    getLocalTime(&local);
     Serial.println(&local, "Date: %d.%m.%y  Time: %H:%M:%S"); // print formated time
     vfd.setMinutes(local.tm_min);
     vfd.setHours(local.tm_hour);
@@ -91,12 +92,8 @@ void setup() {
     WiFi.mode(WIFI_MODE_NULL);});
 
   show35C3.attach(5, [](){
-    //vfd.print("35c3");
-    //struct vfdDisplay::screen test;
-    //test.digit[0].seg[2] = true;
-    //vfd.testNewStruct(test);
+    vfd.print("35c3");
   });
-
 }
 
 void loop() {

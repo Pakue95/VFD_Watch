@@ -28,21 +28,36 @@
 
 #define CHAR_1     8
 #define CHAR_2    12
-#define CHAR_3    14
-#define CHAR_4     1
-#define CHAR_5     5
+#define CHAR_3     1
+#define CHAR_4     5
+#define CHAR_5    14 //DP
 
 class vfdDisplay{
   static Adafruit_MCP23017 mcp;
   Ticker tickerMultiplex;
 public:
+  struct character{ // data type of a single 7-segment
+    bool a;
+    bool b;
+    bool c;
+    bool d;
+    bool e;
+    bool f;
+    bool g;
+    character() : a(0), b(0), c(0), d(0), e(0), f(0), g(0) {}
+    character(bool a_, bool b_, bool c_, bool d_, bool e_, bool f_, bool g_) :
+             a(a_), b(b_), c(c_), d(d_), e(e_), f(f_), g(g_) {}
+  };
+  struct screen{   // data type of a whole screen + decimal points
+    character digit[4];
+    bool dp[2] = {0};
+  };
   vfdDisplay(void);
   ~vfdDisplay(void);
   void begin(
     uint8_t dutyCycle,
     uint32_t freq_multiplex,
     uint32_t freq_heat);
-  void setSegment(uint8_t segments, uint8_t pos);
   void activate();
   void deactivate();
   void setHours(uint8_t hours);
@@ -54,19 +69,11 @@ public:
   uint32_t getFreqHeat();
   void setCharacter(char character, int pos);
   void print(char* text);
+  void setScreen(screen);
 
-  struct character{ // data type of a single 7-segment
-    bool seg[7] = {0};
-  };
-  struct screen{   // data type of a whole screen + decimal points
-    character digit[4];
-    bool dp[2] = {0};
-  };
-
-  void testNewStruct(screen dodo);
 
 private:
-  struct screen _screen;
+  screen _screen; // exchange varable
   // a b c d e f g dp1 dp2
   bool _digit1[9] = {0};
   bool _digit2[9] = {0};
@@ -80,8 +87,7 @@ private:
   uint32_t _freqMultiplex;
   uint32_t _freqHeat;
   uint16_t _setMultiplex(uint8_t pos, bool *digit);
-  uint16_t _updateMultiplex();
-  uint8_t _SEG_ARRAY[7] = {4,2,13,0,11,3,10};
+  void _updateMultiplex();
 };
 
 
