@@ -27,7 +27,7 @@ struct tm local;
 Ticker updateTime;
 Ticker shutdownTimer;
 Ticker pullTime;
-Ticker show35C3;
+Ticker showWord;
 
 
 void initialBoot(){
@@ -35,9 +35,9 @@ void initialBoot(){
 
   WiFi.begin(ssid, password);
   for(int i = 0; WiFi.status() != WL_CONNECTED; ++i ) {
+    i = i % 4;
     wifiAnimation(i);
     Serial.print(".");
-    i = i % 4;
   }
 
   configTzTime(TZ_INFO, NTP_SERVER); // config system time via NTP server
@@ -92,8 +92,8 @@ void setup() {
     Serial.println("Pulled new time.");
     WiFi.mode(WIFI_MODE_NULL);});
 
-  show35C3.attach(5, [](){
-    vfd.print((char*)"35c3");
+  showWord.attach(5, [](){
+    vfd.print((char*)"time");
   });
 }
 
