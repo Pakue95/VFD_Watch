@@ -13,7 +13,7 @@
 #define IO_RST    23
 #define BAT       34
 #define BTN0       0
-#define BTN1      25
+#define BTN1      26
 #define BTN2      35
 
 #define SEG_A      4
